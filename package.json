@@ -18,9 +18,12 @@
   "build": {
     "appId": "com.kairos.media",
     "productName": "Kairos Media",
-    "win": {
-      "target": "nsis",
-      "artifactName": "${productName} Setup.${ext}"
+"win": {
+  "target": [
+    "nsis",
+    "portable"
+  ],
+  "artifactName": "${productName} ${version}.${ext}"
     },
     "nsis": {
       "oneClick": true,
