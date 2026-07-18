@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kairos - Church Media & Projection Engine</title>
+    <!-- Google Fonts: Outfit & Plus Jakarta Sans for premium typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Ambient Glowing Orbs in Background -->
+    <div class="glow-orb orb-1"></div>
+    <div class="glow-orb orb-2"></div>
+    <div class="glow-orb orb-3"></div>
+
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="brand">
+                <span class="brand-logo">
+                    <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                        <polyline points="2 17 12 22 22 17"></polyline>
+                        <polyline points="2 12 12 17 22 12"></polyline>
+                    </svg>
+                </span>
+                <h1>Kairos</h1>
+                <span class="brand-subtitle">Media Engine</span>
+            </div>
+            
+            <div class="header-controls">
+                <button id="btn-launch-projector" class="action-btn projector-launch-btn">
+                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" class="btn-icon">
+                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                        <line x1="8" y1="21" x2="16" y2="21"></line>
+                        <line x1="12" y1="17" x2="12" y2="21"></line>
+                    </svg>
+                    Open Projector Window
+                </button>
+
+                <div class="status-bar">
+                    <span id="speech-supported-badge" class="badge badge-success">
+                        <span class="dot"></span> Web Speech Ready
+                    </span>
+                    <span id="listening-badge" class="badge badge-inactive">
+                        <span class="dot pulse-dot"></span> Offline
+                    </span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Workspace Grid -->
+        <main class="workspace-grid">
+            
+            <!-- LEFT PANEL: Speech Input & Detections -->
+            <section class="left-panel glass-panel">
+                <div class="panel-section transcript-section">
+                    <h2 class="section-title">Live Transcript</h2>
+                    <p class="section-desc">Click the microphone to begin transcription.</p>
+                    
+                    <!-- Mic Controls -->
+                    <div class="mic-controls-container">
+                        <div class="mic-container">
+                            <div class="pulse-ring ring-1"></div>
+                            <div class="pulse-ring ring-2"></div>
+                            <button id="mic-btn" class="mic-button" aria-label="Toggle Voice Listening">
+                                <svg class="icon-mic" viewBox="0 0 24 24" width="26" height="26" stroke="currentColor" stroke-width="2.5" fill="none">
+                                    <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
+                                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                                    <line x1="12" y1="19" x2="12" y2="22"></line>
+                                </svg>
+                                <svg class="icon-stop hidden" viewBox="0 0 24 24" width="26" height="26" stroke="currentColor" stroke-width="2.5" fill="currentColor">
+                                    <rect x="4" y="4" width="16" height="16" rx="2"></rect>
+                                </svg>
+                            </button>
+                        </div>
+                        
+                        <div class="audio-wave hidden" id="audio-wave">
+                            <div class="bar"></div>
+                            <div class="bar"></div>
+                            <div class="bar"></div>
+                            <div class="bar"></div>
+                            <div class="bar"></div>
+                        </div>
+                        
+                        <div id="mic-status-text" class="status-message">Ready to start</div>
+                    </div>
+
+                    <!-- Live Transcript Viewbox -->
+                    <div class="section-header-row margin-top">
+                        <h3 class="subsection-title">Transcript History</h3>
+                        <button id="clear-transcript-btn" class="text-btn">Clear</button>
+                    </div>
+                    <div class="transcript-box" id="transcript-box">
+                        <p class="transcript-placeholder" id="transcript-placeholder">Spoken words appear here...</p>
+                    </div>
+                    
+                    <div class="try-phrases">
+                        <span class="try-label">Click phrases to simulate spoken words:</span>
+                        <button class="try-btn" data-phrase="let's read Genesis chapter 1 verse 1">"Genesis 1:1"</button>
+                        <button class="try-btn" data-phrase="let us look at John chapter 3 verse 16">"John 3:16"</button>
+                        <button class="try-btn" data-phrase="please show us Romans 8:28">"Romans 8:28"</button>
+                    </div>
+                </div>
+
+                <!-- Live Auto-Detections -->
+                <div class="panel-section detections-section border-top">
+                    <div class="section-header-row">
+                        <h2 class="section-title">Detections</h2>
+                        <div class="auto-toggle-container">
+                            <span class="toggle-label">Auto-Queue</span>
+                            <label class="switch">
+                                <input type="checkbox" id="auto-queue-toggle" checked>
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <p class="section-desc">Scripture references detected in transcript:</p>
+                    <div class="detections-list" id="detections-list">
+                        <!-- Filled dynamically -->
+                        <div class="detection-empty-state">No scriptures detected yet.</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- CENTER PANEL: Monitors & Resource Workspace -->
+            <section class="center-panel">
+                <!-- Dual Monitors (Preview & Live/Program) -->
+                <div class="monitors-row">
+                    <!-- Preview Monitor -->
+                    <div class="monitor-wrapper">
+                        <div class="monitor-header">
+                            <span class="monitor-tag preview-tag">Preview</span>
+                            <span id="preview-slide-title" class="monitor-title">No slide loaded</span>
+                        </div>
+                        <div class="monitor-screen preview-screen glass-panel">
+                            <div class="monitor-content" id="preview-content-box">
+                                <p class="monitor-text">Slide content preview will display here.</p>
+                            </div>
+                        </div>
+                        <div class="monitor-footer">
+                            <button id="btn-project-live" class="action-btn live-btn" disabled>
+                                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" class="btn-icon">
+                                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                                </svg>
+                                Project Live
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Live / Program Monitor -->
+                    <div class="monitor-wrapper">
+                        <div class="monitor-header">
+                            <span class="monitor-tag live-tag">Live / Program</span>
+                            <span id="live-slide-title" class="monitor-title">Black Screen</span>
+                        </div>
+                        <div class="monitor-screen live-screen glass-panel" id="live-screen-bg">
+                            <div class="monitor-content" id="live-content-box">
+                                <p class="monitor-text">Projector Output is Blank</p>
+                            </div>
+                        </div>
+                        <div class="monitor-footer">
+                            <button id="btn-clear-projection" class="action-btn clear-btn">
+                                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" class="btn-icon">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                    <line x1="9" y1="9" x2="15" y2="15"></line>
+                                    <line x1="15" y1="9" x2="9" y2="15"></line>
+                                </svg>
+                                Clear Live Output
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabs & Resource Browser Workspace -->
+                <div class="workspace-tabs-container glass-panel">
+                    <!-- Tab Headers -->
+                    <div class="workspace-tabs-header">
+                        <button class="tab-btn active" data-tab="scripture">
+                            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" class="tab-icon">
+                                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                            </svg>
+                            Scripture
+                        </button>
+                        <button class="tab-btn" data-tab="music">
+                            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" class="tab-icon">
+                                <path d="M9 18V5l12-2v13"></path>
+                                <circle cx="6" cy="18" r="3"></circle>
+                                <circle cx="18" cy="16" r="3"></circle>
+                            </svg>
+                            Music
+                        </button>
+                        <button class="tab-btn" data-tab="media">
+                            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2.5" fill="none" class="tab-icon">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                <polyline points="21 15 16 10 5 21"></polyline>
+                            </svg>
+                            Media Themes
+                        </button>
+                    </div>
+
+                    <!-- Tab Contents -->
+                    <div class="workspace-tab-contents">
+                        
+                        <!-- TAB 1: Scripture Reader -->
+                        <div class="tab-content active" id="tab-content-scripture">
+                            <div class="scripture-browser-controls">
+                                <div class="selectors-row">
+                                    <div class="select-wrapper">
+                                        <label for="book-select">Book</label>
+                                        <select id="book-select" class="dropdown-control"></select>
+                                    </div>
+                                    <div class="select-wrapper">
+                                        <label for="chapter-select">Chapter</label>
+                                        <select id="chapter-select" class="dropdown-control"></select>
+                                    </div>
+                                    <div class="select-wrapper">
+                                        <label>Translation</label>
+                                        <div class="translation-pills" id="version-pills">
+                                            <button class="version-pill active" data-version="kjv">KJV</button>
+                                            <button class="version-pill" data-version="nkjv">NKJV</button>
+                                            <button class="version-pill" data-version="niv">NIV</button>
+                                            <button class="version-pill" data-version="nlt">NLT</button>
+                                            <button class="version-pill" data-version="amp">AMP</button>
+                                            <button class="version-pill" data-version="gnt">GNT</button>
+                                            <button class="version-pill" data-version="tpt" title="The Passion Translation is copyrighted and unavailable via public APIs" style="opacity: 0.45; cursor: not-allowed;" disabled>TPT</button>
+                                            <button class="version-pill" data-version="web">WEB</button>
+                                            <button class="version-pill" data-version="bbe">BBE</button>
+                                            <button class="version-pill" data-version="almeida">AA</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="search-input-row">
+                                    <div class="search-field-wrapper">
+                                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2.5" fill="none" class="search-field-icon">
+                                            <circle cx="11" cy="11" r="8"></circle>
+                                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                        </svg>
+                                        <input type="text" id="search-input" placeholder="Search scriptures by phrase or keyword...">
+                                    </div>
+                                    <button id="search-btn" class="action-btn fill-btn">Search</button>
+                                </div>
+                            </div>
+
+                            <div class="bible-reader-feed" id="bible-reader-feed">
+                                <div class="reader-empty-state">Select a Book and Chapter or type a keyword to start reading.</div>
+                            </div>
+                        </div>
+
+                        <!-- TAB 2: Music Presenter -->
+                        <div class="tab-content" id="tab-content-music">
+                            <div class="music-tab-grid">
+                                <div class="songs-selector-sidebar">
+                                    <h3 class="subsection-title">Worship Songs</h3>
+                                    <div class="songs-list" id="songs-list">
+                                        <!-- Populated dynamically -->
+                                    </div>
+                                </div>
+                                <div class="song-workspace" id="song-workspace">
+                                    <div class="song-workspace-empty">
+                                        Select a song from the sidebar to load lyric slide segments.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- TAB 3: Media & Background customizer -->
+                        <div class="tab-content" id="tab-content-media">
+                            <h3 class="subsection-title">Projector Background Themes</h3>
+                            <p class="section-desc">Select a background layout preset to style the live slides display window.</p>
+                            
+                            <div class="theme-grid">
+                                <div class="theme-card active" data-theme="deep-space">
+                                    <div class="theme-preview theme-bg-deep-space"></div>
+                                    <span class="theme-name">Deep Space</span>
+                                </div>
+                                <div class="theme-card" data-theme="gold-velvet">
+                                    <div class="theme-preview theme-bg-gold-velvet"></div>
+                                    <span class="theme-name">Gold Velvet</span>
+                                </div>
+                                <div class="theme-card" data-theme="forest-green">
+                                    <div class="theme-preview theme-bg-forest-green"></div>
+                                    <span class="theme-name">Forest Green</span>
+                                </div>
+                                <div class="theme-card" data-theme="royal-purple">
+                                    <div class="theme-preview theme-bg-royal-purple"></div>
+                                    <span class="theme-name">Royal Purple</span>
+                                </div>
+                                <div class="theme-card" data-theme="dark-obsidian">
+                                    <div class="theme-preview theme-bg-dark-obsidian"></div>
+                                    <span class="theme-name">Dark Obsidian (Pure Black)</span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </section>
+
+            <!-- RIGHT PANEL: Queue / Playlist -->
+            <section class="right-panel glass-panel">
+                <div class="panel-header-row">
+                    <h2 class="section-title">Queue</h2>
+                    <button id="clear-queue-btn" class="text-btn">Clear All</button>
+                </div>
+                <p class="section-desc">Slides prepared for quick selection:</p>
+                <div class="queue-list" id="queue-list">
+                    <!-- Loaded dynamically -->
+                    <div class="queue-empty-state">Queue is empty. Select a verse or lyric block to load it here.</div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+    
+    <script src="bible_kjv.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

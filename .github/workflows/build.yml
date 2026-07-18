@@ -1,0 +1,44 @@
+name: Build Desktop Installer
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Setup Python (for Vosk model download)
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Download and Unpack Vosk Model
+        run: python download_model.py
+
+      - name: Install NPM dependencies
+        run: npm ci
+
+      - name: Package application with electron-builder
+        run: npx electron-builder --windows
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Windows Installer Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Kairos-Windows-Installer
+          path: dist/Kairos Media Setup.exe

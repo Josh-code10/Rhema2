@@ -1,0 +1,53 @@
+{
+  "name": "kairos-media",
+  "version": "1.0.0",
+  "description": "Kairos Church Media Software",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "package": "electron-builder --windows",
+    "postinstall": "node patch-vosk.js"
+  },
+  "dependencies": {
+    "vosk-koffi": "^1.1.1"
+  },
+  "devDependencies": {
+    "electron": "^28.2.0",
+    "electron-builder": "^24.9.1"
+  },
+  "build": {
+    "appId": "com.kairos.media",
+    "productName": "Kairos Media",
+    "win": {
+      "target": "nsis",
+      "artifactName": "${productName} Setup.${ext}"
+    },
+    "nsis": {
+      "oneClick": true,
+      "allowToChangeInstallationDirectory": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    },
+    "files": [
+      "**/*",
+      "!model/**/*",
+      "!dist/**/*",
+      "!Bible_Audio_App.zip",
+      "!Bible_Audio_App/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "model",
+        "to": "model",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "asar": true,
+    "asarUnpack": [
+      "node_modules/vosk-koffi/**/*",
+      "node_modules/koffi/**/*"
+    ]
+  }
+}

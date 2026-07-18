@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kairos - Live Projector Screen</title>
+    <!-- Outfit & Plus Jakarta Sans for premium typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --text-color: #f8fafc;
+            --subtitle-color: #fbbf24;
+            --font-family: 'Outfit', sans-serif;
+            --transition-speed: 0.3s;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: var(--font-family);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        /* Slide Themes */
+        .projector-display {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 4rem 6rem;
+            text-align: center;
+            position: relative;
+            transition: all var(--transition-speed) ease-in-out;
+            background: #080c14;
+        }
+
+        /* Deep Space Theme */
+        .projector-display.theme-deep-space {
+            background: linear-gradient(135deg, #090e17 0%, #03213a 50%, #060913 100%);
+            --subtitle-color: #60a5fa;
+        }
+        
+        /* Gold Velvet Theme */
+        .projector-display.theme-gold-velvet {
+            background: linear-gradient(135deg, #100a03 0%, #3a2205 50%, #0b0702 100%);
+            --subtitle-color: #f59e0b;
+        }
+
+        /* Forest Green Theme */
+        .projector-display.theme-forest-green {
+            background: linear-gradient(135deg, #020d08 0%, #082916 50%, #010805 100%);
+            --subtitle-color: #34d399;
+        }
+
+        /* Royal Purple Theme */
+        .projector-display.theme-royal-purple {
+            background: linear-gradient(135deg, #0c0214 0%, #2e0854 50%, #06010a 100%);
+            --subtitle-color: #c084fc;
+        }
+
+        /* Dark Obsidian (Black) Theme */
+        .projector-display.theme-dark-obsidian {
+            background: #000000;
+            --subtitle-color: #d1d5db;
+        }
+
+        /* Typography & Layout */
+        .slide-content-wrapper {
+            max-width: 1200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 2.5rem;
+            opacity: 1;
+            transform: scale(1);
+            transition: opacity var(--transition-speed) ease, transform var(--transition-speed) cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .slide-content-wrapper.fade-out {
+            opacity: 0;
+            transform: scale(0.97);
+        }
+
+        #projector-text {
+            font-size: 3.5rem;
+            line-height: 1.45;
+            font-weight: 400;
+            text-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+            word-wrap: break-word;
+            word-break: keep-all;
+        }
+
+        #projector-subtitle {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--subtitle-color);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div id="projector-container" class="projector-display theme-deep-space">
+        <div id="content-wrapper" class="slide-content-wrapper">
+            <p id="projector-text">For God so loved the world, that he gave his only begotten Son...</p>
+            <p id="projector-subtitle">John 3:16</p>
+        </div>
+    </div>
+
+    <script>
+        const projectorContainer = document.getElementById("projector-container");
+        const projectorText = document.getElementById("projector-text");
+        const projectorSubtitle = document.getElementById("projector-subtitle");
+        const contentWrapper = document.getElementById("content-wrapper");
+
+        // BroadcastChannel to receive projection events from Dashboard
+        const channel = new BroadcastChannel('kairos-projection');
+
+        channel.onmessage = (event) => {
+            const { text, subtitle, theme } = event.data;
+
+            // Fade out, update content, fade back in
+            contentWrapper.classList.add("fade-out");
+            
+            setTimeout(() => {
+                // Update Text and Subtitle
+                projectorText.textContent = text || "";
+                projectorSubtitle.textContent = subtitle || "";
+
+                // Update Theme Background
+                projectorContainer.className = "projector-display";
+                if (theme) {
+                    projectorContainer.classList.add("theme-" + theme);
+                } else {
+                    projectorContainer.classList.add("theme-deep-space");
+                }
+
+                // Show metadata subtitle only if it exists
+                if (!subtitle) {
+                    projectorSubtitle.style.display = "none";
+                } else {
+                    projectorSubtitle.style.display = "block";
+                }
+
+                // Fade back in
+                contentWrapper.classList.remove("fade-out");
+            }, 180); // match transition speeds
+        };
+
+        // Request initial synchronization with active live slide
+        channel.postMessage({ action: "request-sync" });
+    </script>
+</body>
+</html>
