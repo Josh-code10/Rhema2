@@ -26,7 +26,42 @@ function initVosk() {
         }
         
         console.log("Loading vosk-koffi...");
-        const { Model, Recognizer } = require('vosk-koffi');
+
+        const path = require("path");
+
+// Add the unpacked vosk-koffi folder to the DLL search path
+process.env.PATH =
+    path.join(process.resourcesPath, "app.asar.unpacked", "node_modules", "vosk-koffi") +
+    ";" +
+    process.env.PATH;
+
+console.log(process.env.PATH);
+        
+        try {
+    const path = require("path");
+
+    console.log("Electron:", process.versions.electron);
+    console.log("Node:", process.versions.node);
+    console.log("Platform:", process.platform);
+    console.log("Arch:", process.arch);
+    console.log("Resources:", process.resourcesPath);
+
+    const vosk = require("vosk-koffi");
+    console.log("vosk-koffi loaded successfully");
+
+    const { Model, Recognizer } = vosk;
+} catch (err) {
+    console.error("Failed to load vosk-koffi:");
+    console.error(err);
+    console.error(err.stack);
+
+    require("electron").dialog.showErrorBox(
+        "Vosk Load Error",
+        String(err.stack || err)
+    );
+
+    app.quit();
+}
         
         console.log("Loading Vosk Model into memory...");
         model = new Model(modelPath);
